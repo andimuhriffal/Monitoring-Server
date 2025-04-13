@@ -32,6 +32,20 @@ services:
     networks:
       - monitoring-net
 
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysql-exporter
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: 3306
+    ports:
+      - "9104:9104"
+    restart: unless-stopped
+    networks:
+      - monitoring-net
+
 volumes:
   grafana-data:
 

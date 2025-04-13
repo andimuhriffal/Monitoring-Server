@@ -3,19 +3,28 @@ pipeline {
 
     environment {
         MONITORING_DIR = "${WORKSPACE}/monitoring"
+        MYSQL_ENV_TARGET = "${WORKSPACE}/monitoring/mysql.env"
     }
 
     stages {
+        stage('Prepare MySQL Exporter Secret') {
+            steps {
+                withCredentials([file(credentialsId: 'mysql.env', variable: 'MYSQL_ENV_FILE')]) {
+                    dir("${MONITORING_DIR}") {
+                        sh '''
+                            cp "$MYSQL_ENV_FILE" ./mysql.env
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Setup Monitoring Stack') {
             steps {
-                echo "Navigating to monitoring directory: ${MONITORING_DIR}"
                 dir("${MONITORING_DIR}") {
                     sh '''
-                        echo "[INFO] Shutting down existing containers if any..."
                         docker-compose down || true
-
-                        echo "[INFO] Starting monitoring stack (Prometheus, Grafana, Node Exporter)..."
-                        docker-compose up -d
+                        docker-compose up -d --remove-orphans
                     '''
                 }
             }
@@ -24,14 +33,19 @@ pipeline {
         stage('Check Services Status') {
             steps {
                 sh '''
-                    echo "[INFO] Checking running Docker containers..."
-                    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "prometheus|grafana|node-exporter" || echo "No monitoring containers found."
+                    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "prometheus|grafana|node-exporter|mysql-exporter" || echo "No monitoring containers found."
                 '''
             }
         }
     }
 
     post {
+        always {
+            dir("${MONITORING_DIR}") {
+                sh 'rm -f mysql.env'
+            }
+        }
+
         success {
             echo '✅ Monitoring stack deployed successfully!'
         }

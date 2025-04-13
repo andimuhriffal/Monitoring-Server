@@ -9,10 +9,10 @@ pipeline {
     stages {
         stage('Prepare MySQL Exporter Secret') {
             steps {
-                withCredentials([file(credentialsId: 'MYSQL_ENV', variable: 'MYSQL_ENV_FILE')]) {
+                withCredentials([file(credentialsId: 'MYSQL_ENV', variable: 'MYSQL_ENV')]) {
                     dir("${MONITORING_DIR}") {
                         sh '''
-                            cp "$MYSQL_ENV_FILE" ./mysql.env
+                            cp "$MYSQL_ENV" ./mysql.env
                         '''
                     }
                 }

@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - "9100:9100"
+    networks:
+      - monitoring-net
 
   prometheus:
     image: prom/prometheus
@@ -16,6 +18,8 @@ services:
     ports:
       - "9090:9090"
     restart: unless-stopped
+    networks:
+      - monitoring-net
 
   grafana:
     image: grafana/grafana
@@ -25,6 +29,12 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     restart: unless-stopped
+    networks:
+      - monitoring-net
 
 volumes:
   grafana-data:
+
+networks:
+  monitoring-net:
+    driver: bridge

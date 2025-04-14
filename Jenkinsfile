@@ -8,20 +8,14 @@ pipeline {
     stages {
         stage('Setup Monitoring Stack') {
             steps {
-                echo "📁 Navigating to monitoring directory: ${MONITORING_DIR}"
+                echo "Navigating to monitoring directory: ${MONITORING_DIR}"
                 dir("${MONITORING_DIR}") {
                     sh '''
-                        echo "[INFO] Validating docker-compose.yml..."
-                        if [ ! -f docker-compose.yml ]; then
-                            echo "[ERROR] docker-compose.yml not found in $PWD"
-                            exit 1
-                        fi
-
                         echo "[INFO] Shutting down existing containers if any..."
                         docker-compose down || true
 
-                        echo "[INFO] Starting monitoring stack (Prometheus, Grafana, Node Exporter, MySQL Exporter)..."
-                        docker-compose up -d --remove-orphans
+                        echo "[INFO] Starting monitoring stack (Prometheus, Grafana, Node Exporter)..."
+                        docker-compose up -d
                     '''
                 }
             }
@@ -45,7 +39,7 @@ pipeline {
             echo '✅ Monitoring stack deployed successfully!'
         }
         failure {
-            echo '❌ Monitoring stack failed to deploy. Please check logs above.'
+            echo '❌ Monitoring stack failed to deploy.'
         }
     }
 }

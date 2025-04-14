@@ -31,17 +31,20 @@ services:
     restart: unless-stopped
     networks:
       - monitoring-net
-
-  mysql-exporter:
+      
+  mysqld-exporter:
     image: prom/mysqld-exporter
-    container_name: mysql-exporter
-    env_file:
-      - ./mysql.env
+    container_name: mysqld-exporter
+    restart: unless-stopped
     ports:
       - "9104:9104"
-    restart: unless-stopped
+    command:
+      - "--config.my-cnf=/etc/mysql_exporter/.my.cnf"
+    volumes:
+      - ./secrets/.my.cnf:/etc/mysql_exporter/.my.cnf:ro
     networks:
       - monitoring-net
+
 
 volumes:
   grafana-data:
